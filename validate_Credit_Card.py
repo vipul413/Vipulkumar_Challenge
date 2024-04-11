@@ -1,5 +1,6 @@
-print("Below is the sample Python application to validate Credit Card Number with additional restrictions.")
+print("Below is a Python application to validate Credit Card Number with additional restrictions.")
 
+# This is the function for Credit card numbers validations
 def is_valid_credit_card(card_number):
   """
   This function validates a credit card number with additional restrictions.
@@ -27,7 +28,7 @@ def is_valid_credit_card(card_number):
   if num_digits not in (16):
     return False
 
-  # Check if the card number starts with a valid prefix (3, 4, 5, or 6)
+  # Check if the card number starts with a valid prefix (4, 5, or 6)
   if card_number[0] not in ('4', '5', '6'):
     return False
 
@@ -48,7 +49,7 @@ def is_valid_credit_card(card_number):
   # Apply the Luhn algorithm (already implemented in the original code)
   # ... (rest of the code from the original response for Luhn algorithm)
 
-# usage. Enter Credit Card Number
+# usage. Enter Credit Card Number and It should print Valid it Invalid Message
 card_number = input("Enter your credit card number: ")
 if is_valid_credit_card(card_number):
   print("The credit card number is valid.")
