@@ -1,0 +1,72 @@
+---
+- name: Deploy Apache web server on Amazon Linux EC2
+  hosts: localhost
+  vars:
+    instance_type: t2.micro
+    region: us-east-1
+    ami: ami-051f8a213df8bc089
+    key_name: MyEc2Key.pem
+    security_group: sg-0efb9e1a2bb90f82a
+    subnet_id: subnet-e309f7cd
+    ansible_user: ec2-user
+  tasks:
+    - name: Launch an EC2 instance
+      ec2:
+        region: "{{ region }}"
+        instance_type: "{{ instance_type }}"
+        image: "{{ ami }}"
+        key_name: "{{ key_name }}"
+        group_id: "{{ security_group }}"
+        subnet_id: "{{ subnet_id }}"
+        assign_public_ip: yes
+        wait: yes
+        count: 1
+      register: ec2_instance
+
+    - name: Add the instance to the inventory
+      add_host:
+        hostname: "{{ ec2_instance.instances[0].public_ip }}"
+        ansible_ssh_user: "{{ ansible_user }}"
+        ansible_ssh_private_key_file: /Users/vipulpatel/key/MyEc2Key.pem
+        ansible_python_interpreter: /usr/bin/python3
+      run_once: true
+
+- name: Configure Apache web server
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install Apache web server
+      yum:
+        name: httpd
+        state: present
+
+    - name: Start and enable Apache service
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+
+    - name: Create the Hello World page
+      copy:
+        content: |
+          <html>
+          <head>
+          <title>Hello World</title>
+          </head>
+          <body>
+          <h1>Hello World!</h1>
+          </body>
+          </html>
+        dest: /var/www/html/index.html
+
+    - name: Open port 80 for HTTP traffic
+      ec2_group:
+        name: "{{ security_group }}"
+        region: "{{ region }}"
+        rules:
+          - proto: tcp
+            from_port: 80
+            to_port: 80
+            cidr_ip: 0.0.0.0/0
+        state: present
+

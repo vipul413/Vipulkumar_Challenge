@@ -1,0 +1,39 @@
+---
+- name: Deploy Apache web server and serve Hello World page
+  hosts: webserver
+  become: yes
+  tasks:
+    - name: Install Apache web server
+      yum:
+        name: httpd
+        state: present
+
+    - name: Start and enable Apache service
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+
+    - name: Create the Hello World page
+      copy:
+        content: |
+          <html>
+          <head>
+          <title>Hello World</title>
+          </head>
+          <body>
+          <h1>Hello World!</h1>
+          </body>
+          </html>
+        dest: /var/www/html/index.html
+
+    - name: Open port 80 for HTTP traffic
+      ec2_group:
+        name: sg-0efb9e1a2bb90f82a
+        region: us-east-1
+        rules:
+          - proto: tcp
+            from_port: 80
+            to_port: 80
+            cidr_ip: 0.0.0.0/0
+        state: present
